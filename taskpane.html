@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Claude AI</title>
+  <script src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js" type="text/javascript"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f11;
+      --surface: #18181c;
+      --surface2: #222228;
+      --border: #2e2e38;
+      --accent: #c97d4e;
+      --accent2: #e8a87c;
+      --text: #e8e8f0;
+      --text-muted: #8888a0;
+      --success: #4ec994;
+      --error: #e85c5c;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.5;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+
+    .logo {
+      width: 28px; height: 28px;
+      background: var(--accent);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 600; color: #fff;
+      letter-spacing: -0.5px;
+      flex-shrink: 0;
+    }
+
+    .header-title { font-size: 14px; font-weight: 600; color: var(--text); }
+    .header-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+    .settings-btn {
+      margin-left: auto;
+      background: none; border: none; cursor: pointer;
+      color: var(--text-muted); font-size: 16px; padding: 4px;
+      border-radius: 6px; transition: color 0.15s, background 0.15s;
+    }
+    .settings-btn:hover { color: var(--text); background: var(--surface2); }
+
+    /* ── API Key screen ── */
+    #apiKeyScreen {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 24px; gap: 16px;
+      text-align: center;
+    }
+
+    #apiKeyScreen .icon { font-size: 36px; margin-bottom: 4px; }
+    #apiKeyScreen h2 { font-size: 15px; font-weight: 600; }
+    #apiKeyScreen p { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── Main panel ── */
+    #mainPanel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* ── Actions grid ── */
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 14px 14px 10px;
+      flex-shrink: 0;
+    }
+
+    .action-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 10px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s;
+      text-align: left;
+    }
+    .action-btn:hover {
+      background: var(--surface2);
+      border-color: var(--accent);
+      color: var(--accent2);
+    }
+    .action-btn.active {
+      background: var(--surface2);
+      border-color: var(--accent);
+      color: var(--accent2);
+    }
+    .action-btn .btn-icon { font-size: 15px; flex-shrink: 0; }
+
+    /* ── Language selector (translate) ── */
+    .lang-row {
+      display: none;
+      padding: 0 14px 10px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .lang-row.visible { display: flex; }
+
+    .lang-select {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    /* ── Custom prompt ── */
+    .prompt-row {
+      padding: 0 14px 10px;
+      flex-shrink: 0;
+    }
+
+    .prompt-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      resize: none;
+      outline: none;
+      transition: border-color 0.15s;
+      height: 60px;
+    }
+    .prompt-input:focus { border-color: var(--accent); }
+    .prompt-input::placeholder { color: var(--text-muted); }
+
+    /* ── Run button ── */
+    .run-row {
+      padding: 0 14px 12px;
+      flex-shrink: 0;
+    }
+
+    .run-btn {
+      width: 100%;
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      border-radius: 10px;
+      padding: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .run-btn:hover { opacity: 0.88; }
+    .run-btn:active { transform: scale(0.98); }
+    .run-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* ── Result area ── */
+    .result-area {
+      flex: 1;
+      overflow-y: auto;
+      margin: 0 14px 14px;
+      border-radius: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex; flex-direction: column;
+    }
+
+    .result-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+
+    .result-actions { display: flex; gap: 6px; }
+    .result-action {
+      background: none; border: 1px solid var(--border);
+      color: var(--text-muted); border-radius: 6px;
+      padding: 3px 8px; font-size: 11px; cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.15s;
+    }
+    .result-action:hover { color: var(--text); border-color: var(--accent); background: var(--surface2); }
+
+    .result-content {
+      flex: 1; padding: 12px; overflow-y: auto;
+      font-size: 12.5px; line-height: 1.7;
+      white-space: pre-wrap; color: var(--text);
+    }
+
+    .placeholder-msg {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      height: 100%; gap: 8px;
+      color: var(--text-muted); text-align: center; padding: 16px;
+    }
+    .placeholder-msg .ph-icon { font-size: 28px; opacity: 0.5; }
+    .placeholder-msg p { font-size: 12px; }
+
+    /* Spinner */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Settings overlay ── */
+    #settingsOverlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100;
+      display: none;
+    }
+    #settingsOverlay.open { display: flex; }
+
+    .settings-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      width: calc(100% - 32px);
+      max-width: 320px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .settings-panel h3 { font-size: 14px; font-weight: 600; }
+
+    label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.4px; }
+
+    input[type="password"], input[type="text"] {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      outline: none;
+    }
+    input:focus { border-color: var(--accent); }
+
+    .settings-btns { display: flex; gap: 8px; margin-top: 4px; }
+    .btn-save {
+      flex: 1; background: var(--accent); border: none; color: #fff;
+      border-radius: 8px; padding: 9px; font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .btn-cancel {
+      flex: 1; background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px; padding: 9px;
+      font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer;
+    }
+
+    .status-msg {
+      font-size: 11px; padding: 6px 10px; border-radius: 6px; text-align: center;
+    }
+    .status-msg.success { background: rgba(78,201,148,0.15); color: var(--success); }
+    .status-msg.error { background: rgba(232,92,92,0.15); color: var(--error); }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="logo">C</div>
+  <div>
+    <div class="header-title">Claude AI</div>
+    <div class="header-sub" id="modeLabel">Lecture d'email</div>
+  </div>
+  <button class="settings-btn" onclick="openSettings()" title="Paramètres">⚙</button>
+</div>
+
+<!-- API Key setup screen -->
+<div id="apiKeyScreen" style="display:none;">
+  <div class="icon">🔑</div>
+  <h2>Clé API requise</h2>
+  <p>Pour utiliser Claude AI, entrez votre clé API Anthropic. Vous pouvez l'obtenir sur <strong>console.anthropic.com</strong></p>
+  <button class="run-btn" style="width:auto;padding:10px 24px;" onclick="openSettings()">Configurer la clé API</button>
+</div>
+
+<!-- Main panel -->
+<div id="mainPanel" style="display:none;">
+
+  <!-- Action buttons -->
+  <div class="actions">
+    <button class="action-btn active" id="btn-reply" onclick="selectAction('reply')">
+      <span class="btn-icon">✍️</span> Rédiger réponse
+    </button>
+    <button class="action-btn" id="btn-summarize" onclick="selectAction('summarize')">
+      <span class="btn-icon">📋</span> Résumer
+    </button>
+    <button class="action-btn" id="btn-translate" onclick="selectAction('translate')">
+      <span class="btn-icon">🌐</span> Traduire
+    </button>
+    <button class="action-btn" id="btn-improve" onclick="selectAction('improve')">
+      <span class="btn-icon">✨</span> Améliorer ton
+    </button>
+  </div>
+
+  <!-- Language selector (translate only) -->
+  <div class="lang-row" id="langRow">
+    <select class="lang-select" id="targetLang">
+      <option value="français">→ Français</option>
+      <option value="anglais">→ Anglais</option>
+      <option value="espagnol">→ Espagnol</option>
+      <option value="allemand">→ Allemand</option>
+      <option value="arabe">→ Arabe</option>
+      <option value="portugais">→ Portugais</option>
+      <option value="chinois">→ Chinois</option>
+      <option value="japonais">→ Japonais</option>
+    </select>
+  </div>
+
+  <!-- Custom instructions -->
+  <div class="prompt-row">
+    <textarea class="prompt-input" id="customPrompt" placeholder="Instructions supplémentaires (optionnel)…"></textarea>
+  </div>
+
+  <!-- Run -->
+  <div class="run-row">
+    <button class="run-btn" id="runBtn" onclick="runAction()">
+      <span id="runBtnText">Lancer Claude</span>
+    </button>
+  </div>
+
+  <!-- Result -->
+  <div class="result-area">
+    <div class="result-header">
+      <span>Résultat</span>
+      <div class="result-actions">
+        <button class="result-action" onclick="copyResult()">Copier</button>
+        <button class="result-action" onclick="insertResult()">Insérer</button>
+      </div>
+    </div>
+    <div class="result-content" id="resultContent">
+      <div class="placeholder-msg">
+        <div class="ph-icon">🤖</div>
+        <p>Choisissez une action et cliquez sur<br><strong>Lancer Claude</strong></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings overlay -->
+<div id="settingsOverlay">
+  <div class="settings-panel">
+    <h3>⚙ Paramètres</h3>
+    <div>
+      <label>Clé API Anthropic</label>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-…"/>
+    </div>
+    <div id="settingsStatus"></div>
+    <div class="settings-btns">
+      <button class="btn-cancel" onclick="closeSettings()">Annuler</button>
+      <button class="btn-save" onclick="saveSettings()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentAction = 'reply';
+  let lastResult = '';
+
+  // ── Init ──
+  Office.onReady(function(info) {
+    if (info.host === Office.HostType.Outlook) {
+      const mode = Office.context.mailbox.item.itemType;
+      document.getElementById('modeLabel').textContent =
+        mode === Office.MailboxEnums.ItemType.Message ? 'Composition d\'email' : 'Lecture d\'email';
+      checkApiKey();
+    }
+  });
+
+  function checkApiKey() {
+    const key = localStorage.getItem('claude_api_key');
+    if (key) {
+      document.getElementById('apiKeyScreen').style.display = 'none';
+      document.getElementById('mainPanel').style.display = 'flex';
+    } else {
+      document.getElementById('apiKeyScreen').style.display = 'flex';
+      document.getElementById('mainPanel').style.display = 'none';
+    }
+  }
+
+  // ── Action selection ──
+  function selectAction(action) {
+    currentAction = action;
+    document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + action).classList.add('active');
+    document.getElementById('langRow').classList.toggle('visible', action === 'translate');
+  }
+
+  // ── Main runner ──
+  async function runAction() {
+    const apiKey = localStorage.getItem('claude_api_key');
+    if (!apiKey) { openSettings(); return; }
+
+    const btn = document.getElementById('runBtn');
+    const btnText = document.getElementById('runBtnText');
+    btn.disabled = true;
+    btnText.innerHTML = '';
+    const spinner = document.createElement('div');
+    spinner.className = 'spinner';
+    btn.appendChild(spinner);
+
+    document.getElementById('resultContent').innerHTML = '<div class="placeholder-msg"><div class="ph-icon">⏳</div><p>Claude réfléchit…</p></div>';
+
+    try {
+      const emailContent = await getEmailContent();
+      const prompt = buildPrompt(emailContent);
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1024,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error?.message || 'Erreur API');
+      }
+
+      const data = await response.json();
+      lastResult = data.content[0].text;
+      document.getElementById('resultContent').textContent = lastResult;
+
+    } catch (e) {
+      document.getElementById('resultContent').innerHTML =
+        `<div class="placeholder-msg"><div class="ph-icon">❌</div><p style="color:#e85c5c">${e.message}</p></div>`;
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '';
+      btnText.textContent = 'Lancer Claude';
+      btn.appendChild(btnText);
+    }
+  }
+
+  // ── Get email content ──
+  function getEmailContent() {
+    return new Promise((resolve, reject) => {
+      const item = Office.context.mailbox.item;
+      if (item.itemType === Office.MailboxEnums.ItemType.Message && item.body) {
+        // Compose mode
+        item.body.getAsync(Office.CoercionType.Text, {}, r => {
+          if (r.status === Office.AsyncResultStatus.Succeeded) {
+            resolve(r.value || '(corps vide)');
+          } else {
+            reject(new Error('Impossible de lire le corps'));
+          }
+        });
+      } else {
+        // Read mode
+        item.body.getAsync(Office.CoercionType.Text, {}, r => {
+          if (r.status === Office.AsyncResultStatus.Succeeded) {
+            resolve(r.value || '(corps vide)');
+          } else {
+            reject(new Error('Impossible de lire le corps'));
+          }
+        });
+      }
+    });
+  }
+
+  // ── Build prompt ──
+  function buildPrompt(emailContent) {
+    const custom = document.getElementById('customPrompt').value.trim();
+    const lang = document.getElementById('targetLang').value;
+
+    const base = {
+      reply: `Tu es un assistant professionnel. Rédige une réponse claire et professionnelle à cet email. Réponds directement avec le texte de la réponse, sans explication.`,
+      summarize: `Tu es un assistant professionnel. Fais un résumé concis de cet email en 3-5 points clés en français. Utilise des puces (•).`,
+      translate: `Tu es un traducteur expert. Traduis cet email en ${lang}. Fournis uniquement la traduction, sans commentaire.`,
+      improve: `Tu es un rédacteur expert. Améliore le ton et la clarté de cet email en le rendant plus professionnel et percutant. Fournis uniquement le texte amélioré.`
+    };
+
+    let prompt = base[currentAction] + '\n\n';
+    if (custom) prompt += `Instructions supplémentaires : ${custom}\n\n`;
+    prompt += `Email :\n---\n${emailContent}\n---`;
+    return prompt;
+  }
+
+  // ── Copy result ──
+  function copyResult() {
+    if (!lastResult) return;
+    navigator.clipboard.writeText(lastResult).then(() => {
+      showToast('Copié !');
+    }).catch(() => {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = lastResult;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('Copié !');
+    });
+  }
+
+  // ── Insert result into email body ──
+  function insertResult() {
+    if (!lastResult) return;
+    const item = Office.context.mailbox.item;
+    if (item.body && item.body.setAsync) {
+      item.body.setAsync(lastResult, { coercionType: Office.CoercionType.Text }, r => {
+        if (r.status === Office.AsyncResultStatus.Succeeded) {
+          showToast('Inséré dans l\'email !');
+        } else {
+          showToast('Erreur lors de l\'insertion', true);
+        }
+      });
+    } else {
+      showToast('Insertion disponible uniquement en mode composition', true);
+    }
+  }
+
+  function showToast(msg, isError = false) {
+    // Simple visual feedback via button text
+    const btn = isError ? null : null;
+    alert(msg); // Replace with nicer toast if needed
+  }
+
+  // ── Settings ──
+  function openSettings() {
+    const key = localStorage.getItem('claude_api_key') || '';
+    document.getElementById('apiKeyInput').value = key;
+    document.getElementById('settingsStatus').innerHTML = '';
+    document.getElementById('settingsOverlay').classList.add('open');
+  }
+
+  function closeSettings() {
+    document.getElementById('settingsOverlay').classList.remove('open');
+  }
+
+  function saveSettings() {
+    const key = document.getElementById('apiKeyInput').value.trim();
+    const status = document.getElementById('settingsStatus');
+    if (!key || !key.startsWith('sk-ant-')) {
+      status.innerHTML = '<div class="status-msg error">Clé invalide. Elle doit commencer par sk-ant-</div>';
+      return;
+    }
+    localStorage.setItem('claude_api_key', key);
+    status.innerHTML = '<div class="status-msg success">✓ Clé enregistrée</div>';
+    setTimeout(() => {
+      closeSettings();
+      checkApiKey();
+    }, 800);
+  }
+</script>
+</body>
+</html>
