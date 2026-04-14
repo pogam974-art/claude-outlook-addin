@@ -13,12 +13,12 @@
   <DisplayName DefaultValue="Claude AI"/>
   <Description DefaultValue="Intégrez Claude AI dans Outlook pour rédiger, résumer, traduire et améliorer vos emails."/>
 
-  <IconUrl DefaultValue="https://YOUR-DOMAIN/assets/icon-32.png"/>
-  <HighResolutionIconUrl DefaultValue="https://YOUR-DOMAIN/assets/icon-80.png"/>
-  <SupportUrl DefaultValue="https://YOUR-DOMAIN/support"/>
+  <IconUrl DefaultValue="https://pogam974-art.github.io/claude-outlook-addin/assets/icon-32.png"/>
+  <HighResolutionIconUrl DefaultValue="https:pogam974-art.github.io/claude-outlook-addin/assets/icon-80.png"/>
+  <SupportUrl DefaultValue="https://pogam974-art.github.io/claude-outlook-addin/support"/>
 
   <AppDomains>
-    <AppDomain>https://YOUR-DOMAIN</AppDomain>
+    <AppDomain>https://pogam974-art.github.io/claude-outlook-addin</AppDomain>
   </AppDomains>
 
   <Hosts>
